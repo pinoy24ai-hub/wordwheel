@@ -1,0 +1,67 @@
+# ── WordWheel — Netlify configuration ─────────────────────
+
+[build]
+  publish = "."          # root folder is the publish directory
+  # No build command — this is a pure static site
+
+# ── Production context ─────────────────────────────────────
+[context.production]
+  environment = { NODE_ENV = "production" }
+
+# ── Headers ────────────────────────────────────────────────
+# Applied to every response from the published directory.
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Clickjacking protection
+    X-Frame-Options = "DENY"
+    # Prevent MIME-type sniffing
+    X-Content-Type-Options = "nosniff"
+    # Basic XSS protection for older browsers
+    X-XSS-Protection = "1; mode=block"
+    # Only send origin in the Referer header
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Restrict powerful features
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Long-lived cache for fingerprinted/versioned assets
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# HTML and the service worker must always be re-validated
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    # Service workers must not be cached aggressively;
+    # the browser needs to check for updates on every load.
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# manifest.json should revalidate so installs pick up changes
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type  = "application/manifest+json"

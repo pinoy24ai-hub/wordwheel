@@ -1,0 +1,13 @@
+# ── WordWheel — Netlify _redirects ────────────────────────
+#
+# Format: from  to  [status]
+# Docs:   https://docs.netlify.com/routing/redirects/
+
+# Redirect bare domain to index (belt-and-suspenders; Netlify
+# serves index.html by default but this makes it explicit)
+/           /index.html   200
+
+# Splat fallback — any unknown path serves the app shell so
+# a user sharing a direct URL still lands on the game rather
+# than a 404.  Use 200 (rewrite) not 301 so the URL is kept.
+/*          /index.html   200
