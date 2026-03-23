@@ -15,9 +15,127 @@
 <body>
   <div id="app">
 
-    <!-- ── Header ── -->
+    <!-- ══════════════════════════════════════════
+         Difficulty selection (full-screen overlay)
+         ══════════════════════════════════════════ -->
+    <div id="diff-screen" class="diff-screen" role="dialog" aria-modal="true" aria-label="Choose difficulty">
+      <div class="diff-container">
+
+        <div class="diff-header">
+          <h1 class="diff-logo">Word<span>Wheel</span></h1>
+          <p class="diff-tagline">Choose your challenge</p>
+        </div>
+
+        <div class="diff-cards">
+
+          <button class="diff-card diff-easy" id="diff-easy" aria-label="Easy difficulty">
+            <span class="diff-card-icon" aria-hidden="true">🌿</span>
+            <div class="diff-card-body">
+              <span class="diff-card-name">Easy</span>
+              <ul class="diff-card-info">
+                <li>5-letter words</li>
+                <li>No time limit</li>
+                <li>Hints cost 5 pts</li>
+              </ul>
+            </div>
+            <span class="diff-card-arrow" aria-hidden="true">›</span>
+          </button>
+
+          <button class="diff-card diff-medium" id="diff-medium" aria-label="Medium difficulty">
+            <span class="diff-popular">Popular</span>
+            <span class="diff-card-icon" aria-hidden="true">⚡</span>
+            <div class="diff-card-body">
+              <span class="diff-card-name">Medium</span>
+              <ul class="diff-card-info">
+                <li>6-letter words</li>
+                <li>60-second timer</li>
+                <li>Hints cost 5 pts</li>
+              </ul>
+            </div>
+            <span class="diff-card-arrow" aria-hidden="true">›</span>
+          </button>
+
+          <button class="diff-card diff-hard" id="diff-hard" aria-label="Hard difficulty">
+            <span class="diff-card-icon" aria-hidden="true">🔥</span>
+            <div class="diff-card-body">
+              <span class="diff-card-name">Hard</span>
+              <ul class="diff-card-info">
+                <li>7-letter words</li>
+                <li>30-second timer</li>
+                <li>Hints cost 10 pts</li>
+              </ul>
+            </div>
+            <span class="diff-card-arrow" aria-hidden="true">›</span>
+          </button>
+
+        </div><!-- .diff-cards -->
+
+        <div class="daily-entry">
+          <button class="btn daily-btn" id="diff-daily" aria-label="Daily Challenge">
+            <span class="daily-btn-icon" aria-hidden="true">📅</span>
+            <span class="daily-btn-text">
+              <span class="daily-btn-name">Daily Challenge</span>
+              <span class="daily-btn-sub" id="daily-btn-sub">One puzzle · changes every day</span>
+            </span>
+            <span class="daily-btn-arrow" aria-hidden="true">›</span>
+          </button>
+        </div>
+
+      </div><!-- .diff-container -->
+    </div><!-- #diff-screen -->
+
+    <!-- ══════════════════════════════════════════
+         Daily Challenge Result overlay
+         ══════════════════════════════════════════ -->
+    <div class="daily-screen hidden" id="daily-screen" role="dialog" aria-modal="true" aria-label="Daily Challenge Result">
+      <div class="daily-card">
+
+        <div class="daily-card-top">
+          <div class="daily-chip">📅 Daily Challenge</div>
+          <div class="daily-meta">
+            <span class="daily-date-str" id="daily-date-str"></span>
+            <span class="daily-sep">·</span>
+            <span class="daily-diff-lbl" id="daily-diff-lbl"></span>
+          </div>
+        </div>
+
+        <div class="daily-result-icon" id="daily-result-icon" aria-hidden="true"></div>
+        <div class="daily-word-reveal" id="daily-word-reveal"></div>
+
+        <div class="daily-stats-row">
+          <div class="daily-stat">
+            <span class="daily-stat-val" id="ds-score">0</span>
+            <span class="daily-stat-lbl">Score</span>
+          </div>
+          <div class="daily-stat">
+            <span class="daily-stat-val" id="ds-hints"></span>
+            <span class="daily-stat-lbl">Hints</span>
+          </div>
+          <div class="daily-stat">
+            <span class="daily-stat-val" id="ds-speed"></span>
+            <span class="daily-stat-lbl">Speed</span>
+          </div>
+        </div>
+
+        <pre class="daily-share-preview" id="daily-share-preview" aria-label="Share text preview"></pre>
+
+        <div class="daily-btn-row">
+          <button class="btn primary" id="btn-share-result">📋 Copy Result</button>
+          <button class="btn ghost"   id="btn-daily-back">← Menu</button>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ══════════════════════════════════════════
+         Header
+         ══════════════════════════════════════════ -->
     <header class="header">
-      <h1 class="logo">Word<span>Wheel</span></h1>
+      <div class="header-left">
+        <h1 class="logo">Word<span>Wheel</span></h1>
+        <span class="diff-badge" id="diff-badge"></span>
+      </div>
       <div class="header-stats">
         <!-- Circular round-progress ring -->
         <div class="round-ring" aria-label="Round progress">
@@ -33,7 +151,10 @@
         </div>
         <div class="stat">
           <span class="stat-label">Score</span>
-          <span class="stat-value" id="score">0</span>
+          <div class="score-row">
+            <span class="stat-value" id="score">0</span>
+            <span class="streak-flame" id="streak-flame" aria-live="polite"></span>
+          </div>
         </div>
       </div>
     </header>
@@ -43,11 +164,23 @@
       <div class="progress-fill" id="progress-fill"></div>
     </div>
 
-    <!-- ── Main game area ── -->
+    <!-- ══════════════════════════════════════════
+         Main game area
+         ══════════════════════════════════════════ -->
     <main class="game">
 
-      <!-- Category chip -->
-      <div class="category" id="category">Loading…</div>
+      <!-- Category chip + countdown timer (side by side) -->
+      <div class="meta-row">
+        <div class="category" id="category">Loading…</div>
+        <!-- Timer ring — hidden in Easy mode -->
+        <div class="timer-wrap hidden" id="timer-wrap" aria-live="polite" aria-label="Time remaining">
+          <svg class="timer-ring-svg" viewBox="0 0 44 44" aria-hidden="true">
+            <circle class="timer-ring-track" cx="22" cy="22" r="18"/>
+            <circle class="timer-ring-fill"  cx="22" cy="22" r="18" id="timer-ring-fill"/>
+          </svg>
+          <span class="timer-num" id="timer-num">60</span>
+        </div>
+      </div>
 
       <!-- Word slots + feedback -->
       <div class="word-area">
@@ -67,26 +200,31 @@
         <button class="btn ghost"   id="btn-hint">💡&nbsp; Hint</button>
       </div>
       <div class="btn-row">
+        <button class="btn ghost"          id="btn-shuffle">⇄&nbsp; Shuffle</button>
         <button class="btn primary hidden" id="btn-next">Next Puzzle →</button>
       </div>
 
     </main>
 
-    <!-- ── Game-complete screen ── -->
+    <!-- ══════════════════════════════════════════
+         Game-complete overlay
+         ══════════════════════════════════════════ -->
     <div class="complete-screen hidden" id="complete-screen" role="dialog" aria-modal="true" aria-label="Game complete">
       <div class="complete-card">
         <div class="complete-emoji" id="complete-emoji">🏆</div>
         <h2 id="complete-heading">You finished!</h2>
         <p>Final Score</p>
-        <div class="final-score" id="final-score">0 / 20</div>
+        <div class="final-score" id="final-score">0 / 200</div>
         <p class="complete-msg" id="complete-msg"></p>
-        <button class="btn primary" id="btn-restart">Play Again</button>
+        <div class="complete-stats" id="complete-stats"></div>
+        <button class="btn primary" id="btn-restart">Choose Difficulty</button>
       </div>
     </div>
 
   </div><!-- #app -->
 
   <script src="words.js"></script>
+  <script src="bonus-words.js"></script>
   <script src="game.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

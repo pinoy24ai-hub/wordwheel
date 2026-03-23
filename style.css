@@ -96,6 +96,40 @@ body {
 
 .logo span { color: var(--purple-light); }
 
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+/* Difficulty badge shown next to logo while playing */
+.diff-badge {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.diff-badge-easy {
+  color: var(--green-light);
+  border-color: var(--green);
+  background: rgba(16,185,129,0.10);
+}
+.diff-badge-medium {
+  color: var(--purple-light);
+  border-color: var(--purple-light);
+  background: rgba(124,58,237,0.10);
+}
+.diff-badge-hard {
+  color: var(--red-light);
+  border-color: var(--red);
+  background: rgba(239,68,68,0.10);
+}
+
 .header-stats {
   display: flex;
   align-items: center;
@@ -120,6 +154,33 @@ body {
   font-size: 1.05rem;
   font-weight: 800;
   color: var(--text);
+}
+
+/* Score + streak flame row */
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.streak-flame {
+  font-size: 0.9rem;
+  line-height: 1;
+  display: inline-block;
+  min-width: 0;
+  transition: opacity 0.2s;
+}
+
+.streak-flame:empty { opacity: 0; }
+
+.streak-flame.flame-pop {
+  animation: flamePop 0.4s var(--ease-spring) both;
+}
+
+@keyframes flamePop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.3); }
+  100% { transform: scale(1);   opacity: 1; }
 }
 
 /* ── Round Progress Ring ───────────────────── */
@@ -314,6 +375,52 @@ body {
 .feedback.success { color: var(--green-light); }
 .feedback.error   { color: var(--red-light);   }
 .feedback.hint    { color: var(--amber-light);  }
+.feedback.bonus   {
+  color: var(--amber-light);
+  animation: bonusFeedbackPop 0.35s var(--ease-spring) both;
+}
+
+/* Bonus floating particle */
+.word-area { position: relative; }
+
+.bonus-particle {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--amber-light);
+  text-shadow: 0 0 12px var(--amber-glow);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: bonusFloat 1.0s ease-out forwards;
+}
+
+@keyframes bonusFeedbackPop {
+  0%   { opacity: 0; transform: scale(0.7); }
+  60%  { transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bonusFloat {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1);    }
+  20%  { opacity: 1; transform: translateX(-50%) translateY(-6px)  scale(1.15); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-52px) scale(0.9);  }
+}
+
+/* Bonus wheel glow (amber) */
+.wheel.bonus-glow::before {
+  background: radial-gradient(circle at 50% 50%,
+    rgba(245,158,11,0.28) 0%, transparent 70%);
+  animation: bonusGlowPulse 0.9s ease-out forwards;
+}
+
+@keyframes bonusGlowPulse {
+  0%   { opacity: 0; transform: scale(0.85); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.15); }
+}
 
 /* ══════════════════════════════════════════════
    Wheel
@@ -581,6 +688,41 @@ body {
 .hidden { display: none !important; }
 
 /* ══════════════════════════════════════════════
+   Shuffle animations
+   ══════════════════════════════════════════════ */
+
+/* Tile exit: shrink + twist away */
+@keyframes tileExit {
+  0%   { transform: translate(-50%, -50%) scale(1)    rotate(0deg);  opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0.05) rotate(60deg); opacity: 0; }
+}
+
+.tile.exiting {
+  animation: tileExit 0.19s ease-in forwards !important;
+  pointer-events: none;
+}
+
+/* Wheel border pulses bright purple during the shuffle gap */
+@keyframes wheelShuffle {
+  0%, 100% {
+    border-color: rgba(167,139,250,0.18);
+    box-shadow: 0 0 80px rgba(124,58,237,0.13),
+                0 0 0 1px rgba(255,255,255,0.04) inset,
+                0 22px 60px rgba(0,0,0,0.45);
+  }
+  45% {
+    border-color: rgba(167,139,250,0.75);
+    box-shadow: 0 0 0 3px  rgba(167,139,250,0.45),
+                0 0 70px   rgba(124,58,237,0.45),
+                0 22px 60px rgba(0,0,0,0.45);
+  }
+}
+
+.wheel.shuffling {
+  animation: wheelShuffle 0.42s ease;
+}
+
+/* ══════════════════════════════════════════════
    Shake (wrong-answer container animation)
    ══════════════════════════════════════════════ */
 @keyframes shake {
@@ -670,8 +812,510 @@ body {
   letter-spacing: normal !important;
   font-size: 0.88rem !important;
   color: var(--text-muted) !important;
-  margin-bottom: 26px !important;
+  margin-bottom: 16px !important;
   font-style: italic;
+}
+
+.complete-stats {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.cstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 8px 14px;
+  min-width: 68px;
+}
+
+.cstat-val {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--amber-light);
+}
+
+.cstat-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* 7-letter hard mode needs one more stagger step */
+.slot.correct:nth-child(7) { animation-delay: 0.42s; }
+
+/* ══════════════════════════════════════════════
+   Meta row — category chip + countdown timer
+   ══════════════════════════════════════════════ */
+.meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+}
+
+/* ── Countdown timer ring ──────────────────── */
+.timer-wrap {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.timer-ring-svg {
+  width: 50px;
+  height: 50px;
+  transform: rotate(-90deg);
+}
+
+.timer-ring-track {
+  fill: none;
+  stroke: rgba(255,255,255,0.07);
+  stroke-width: 3.5;
+}
+
+.timer-ring-fill {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 113.1;   /* 2π × r=18 */
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1.05s linear, stroke 0.4s ease;
+}
+
+.timer-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--text);
+  transition: color 0.3s ease;
+}
+
+/* Warning: amber */
+.timer-wrap.timer-warning .timer-ring-fill { stroke: var(--amber); }
+.timer-wrap.timer-warning .timer-num       { color: var(--amber-light); }
+
+/* Critical: red + pulse */
+.timer-wrap.timer-critical .timer-ring-fill {
+  stroke: var(--red);
+  filter: drop-shadow(0 0 5px rgba(239,68,68,0.7));
+}
+.timer-wrap.timer-critical .timer-num { color: var(--red-light); }
+
+@keyframes timerPulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.18); }
+}
+.timer-wrap.timer-critical {
+  animation: timerPulse 0.65s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════
+   Difficulty selection screen
+   ══════════════════════════════════════════════ */
+@keyframes diffCardIn {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.diff-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  /* Same nebula backdrop as the game */
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -5%,  rgba(124,58,237,0.30) 0%, transparent 65%),
+    radial-gradient(ellipse 55% 40% at 90% 90%,  rgba(99,102,241,0.15) 0%, transparent 60%),
+    linear-gradient(170deg, #09091e 0%, #07070f 100%);
+  overflow-y: auto;
+}
+
+.diff-container {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.diff-header {
+  text-align: center;
+}
+
+.diff-logo {
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.diff-logo span { color: var(--purple-light); }
+
+.diff-tagline {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Cards container */
+.diff-cards {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Individual difficulty card */
+.diff-card {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.09);
+  cursor: pointer;
+  font-family: var(--font);
+  color: var(--text);
+  text-align: left;
+  transition: background 0.18s ease, border-color 0.18s ease,
+              box-shadow 0.18s ease, transform 0.12s ease;
+  outline: none;
+  overflow: hidden;
+  animation: diffCardIn 0.4s var(--ease-spring) both;
+}
+
+.diff-card:nth-child(1) { animation-delay: 0.05s; }
+.diff-card:nth-child(2) { animation-delay: 0.12s; }
+.diff-card:nth-child(3) { animation-delay: 0.19s; }
+
+.diff-card:focus-visible {
+  box-shadow: 0 0 0 3px var(--purple-light);
+}
+
+.diff-card:active {
+  transform: scale(0.98);
+}
+
+/* Easy — green */
+.diff-easy {
+  border-color: rgba(16,185,129,0.30);
+}
+.diff-easy:hover {
+  background: rgba(16,185,129,0.08);
+  border-color: rgba(16,185,129,0.60);
+  box-shadow: 0 0 30px rgba(16,185,129,0.15);
+}
+
+/* Medium — purple (featured) */
+.diff-medium {
+  border-color: rgba(124,58,237,0.45);
+  background: rgba(124,58,237,0.07);
+}
+.diff-medium:hover {
+  background: rgba(124,58,237,0.14);
+  border-color: rgba(167,139,250,0.70);
+  box-shadow: 0 0 30px rgba(124,58,237,0.22);
+}
+
+/* Hard — red */
+.diff-hard {
+  border-color: rgba(239,68,68,0.28);
+}
+.diff-hard:hover {
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.55);
+  box-shadow: 0 0 30px rgba(239,68,68,0.14);
+}
+
+/* Popular badge on medium */
+.diff-popular {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 0.55rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--purple-light);
+  background: rgba(124,58,237,0.20);
+  border: 1px solid rgba(167,139,250,0.35);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+.diff-card-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.diff-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.diff-card-name {
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: -0.2px;
+  line-height: 1;
+}
+
+.diff-easy   .diff-card-name { color: var(--green-light); }
+.diff-medium .diff-card-name { color: var(--purple-light); }
+.diff-hard   .diff-card-name { color: var(--red-light); }
+
+.diff-card-info {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.diff-card-info li {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.diff-card-arrow {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  line-height: 1;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.diff-easy:hover   .diff-card-arrow { color: var(--green-light);  transform: translateX(3px); }
+.diff-medium:hover .diff-card-arrow { color: var(--purple-light); transform: translateX(3px); }
+.diff-hard:hover   .diff-card-arrow { color: var(--red-light);    transform: translateX(3px); }
+
+/* ── Daily Challenge entry (below diff-cards) ── */
+.daily-entry {
+  margin-top: 14px;
+  animation: diffCardIn 0.4s var(--ease-spring) 0.28s both;
+}
+
+.daily-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+}
+
+.daily-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.20);
+  transform: translateY(-1px);
+}
+
+.daily-btn:active { transform: scale(0.98); }
+
+.daily-btn-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.daily-btn-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.daily-btn-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.daily-btn-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.daily-btn-arrow {
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.daily-btn:hover .daily-btn-arrow {
+  color: var(--amber-light);
+  transform: translateX(3px);
+}
+
+/* ══════════════════════════════════════════════
+   Daily Challenge Result screen
+   ══════════════════════════════════════════════ */
+.daily-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(8, 8, 26, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: fadeIn 0.3s ease;
+}
+
+.daily-screen.hidden { display: none; }
+
+.daily-card {
+  background: var(--bg2);
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: 22px;
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: slideUp 0.4s var(--ease-spring);
+}
+
+.daily-card-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.daily-chip {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: var(--amber-light);
+}
+
+.daily-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.daily-sep { opacity: 0.5; }
+
+.daily-diff-lbl {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.daily-result-icon {
+  font-size: 2.8rem;
+  line-height: 1;
+}
+
+.daily-word-reveal {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--amber-light);
+  text-shadow: 0 0 20px var(--amber-glow);
+}
+
+.daily-stats-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.daily-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 6px;
+}
+
+.daily-stat-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.daily-stat-lbl {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.daily-share-preview {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  margin: 0;
+  user-select: all;
+}
+
+.daily-btn-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.daily-btn-row .btn {
+  flex: 1;
 }
 
 /* ══════════════════════════════════════════════
@@ -684,13 +1328,13 @@ body {
     --wheel-size:  262px;
     --tile-size:   56px;    /* absolute minimum for comfortable tapping */
     --tile-font:   1.1rem;
-    --slot-w:      32px;
-    --slot-h:      44px;
-    --slot-font:   1.2rem;
+    --slot-w:      30px;    /* narrower so 7 slots fit (~280px total with 6px gaps) */
+    --slot-h:      42px;
+    --slot-font:   1.1rem;
   }
-  .slots  { gap: 6px; }
+  .slots  { gap: 5px; }
   .logo   { font-size: 1.3rem; }
-  .btn    { padding: 10px 16px; font-size: 0.78rem; }
+  .btn    { padding: 10px 14px; font-size: 0.76rem; }
 }
 
 /* Mid-range phones */

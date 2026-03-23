@@ -3,7 +3,7 @@
    Cache-first strategy for full offline play.
    ══════════════════════════════════════════════ */
 
-const CACHE_NAME = 'wordwheel-v1';
+const CACHE_NAME = 'wordwheel-v2';
 
 const ASSETS = [
   './',
@@ -11,6 +11,7 @@ const ASSETS = [
   './style.css',
   './game.js',
   './words.js',
+  './bonus-words.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
