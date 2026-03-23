@@ -1,9 +1,17 @@
 /* ══════════════════════════════════════════════
    WordWheel — Service Worker (sw.js)
    Cache-first strategy for full offline play.
+
+   DEPLOY INSTRUCTION: bump CACHE_NAME to the
+   current UTC timestamp (YYYYMMDDHHMMSS) every
+   time you push a new version.  The activate
+   handler below automatically deletes every
+   cache whose name doesn't match, so old cached
+   files are evicted the moment the new SW takes
+   control.
    ══════════════════════════════════════════════ */
 
-const CACHE_NAME = 'wordwheel-v2';
+const CACHE_NAME = 'wordwheel-20260322143000';
 
 const ASSETS = [
   './',
