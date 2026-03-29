@@ -506,15 +506,21 @@ function renderTrail(liveX, liveY) {
 }
 
 /* ══════════════════════════════════════════════
-   Interaction — drag-to-select (touch + mouse)
+   Interaction — pointer-events drag-to-select
+   Works reliably on mobile and desktop.
    ══════════════════════════════════════════════ */
 let _isDragging = false;
 
 function setupWheelInteraction() {
-  /* Hit-test: find the .tile element (if any) directly under a screen point.
-     elementFromPoint skips pointer-events:none nodes like the SVG trail. */
+
+  /* Hit-test: given a client coordinate, which .tile is under it?
+     We temporarily hide the SVG trail so elementFromPoint
+     sees the actual tile buttons underneath.                     */
   function tileAt(x, y) {
+    const svg = document.getElementById('trail-svg');
+    if (svg) svg.style.display = 'none';
     const el = document.elementFromPoint(x, y);
+    if (svg) svg.style.display = '';
     if (!el) return null;
     const t = el.classList.contains('tile') ? el : el.closest('.tile');
     return t && dom.wheel.contains(t) ? t : null;
@@ -549,52 +555,40 @@ function setupWheelInteraction() {
     if (!_isDragging) return;
     _isDragging = false;
     clearAll();
+    renderTrail();
   }
 
-  /* ── Touch (mobile) — registered on wheel so touchmove follows the
-        original contact point even when the finger drifts outside.
-        { passive: false } is required so preventDefault() can block
-        the browser's scroll before it claims the gesture.          ── */
-  dom.wheel.addEventListener('touchstart', e => {
-    e.stopPropagation();
+  /* ── Pointer events — single unified handler for touch + mouse.
+     setPointerCapture keeps the pointer locked to the wheel even
+     when the finger slides outside it, and automatically blocks
+     the browser scroll/pan while captured.                       ── */
+  dom.wheel.addEventListener('pointerdown', e => {
+    if (state.done || state.checking) return;
     e.preventDefault();
-    const t = e.changedTouches[0];
-    startGesture(t.clientX, t.clientY);
-  }, { passive: false });
-
-  dom.wheel.addEventListener('touchmove', e => {
-    e.stopPropagation();
-    e.preventDefault();
-    const t = e.changedTouches[0];
-    moveGesture(t.clientX, t.clientY);
-  }, { passive: false });
-
-  dom.wheel.addEventListener('touchend', e => {
-    e.stopPropagation();
-    e.preventDefault();
-    endGesture();
-  }, { passive: false });
-
-  dom.wheel.addEventListener('touchcancel', e => {
-    e.stopPropagation();
-    cancelGesture();
-  }, { passive: false });
-
-  /* ── Mouse (desktop) — mousemove/mouseup on document so dragging
-        outside the wheel boundary still completes the gesture.      ── */
-  dom.wheel.addEventListener('mousedown', e => {
-    if (e.button !== 0) return;
+    dom.wheel.setPointerCapture(e.pointerId);
     startGesture(e.clientX, e.clientY);
   });
 
-  document.addEventListener('mousemove', e => {
+  dom.wheel.addEventListener('pointermove', e => {
+    if (!_isDragging) return;
+    e.preventDefault();
     moveGesture(e.clientX, e.clientY);
   });
 
-  document.addEventListener('mouseup', e => {
-    if (e.button !== 0) return;
+  dom.wheel.addEventListener('pointerup', e => {
+    e.preventDefault();
     endGesture();
   });
+
+  dom.wheel.addEventListener('pointercancel', () => {
+    cancelGesture();
+  });
+
+  /* Block click events on tiles so a tap does not double-fire */
+  dom.wheel.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
 }
 
 function selectTile(index) {
