@@ -430,6 +430,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 8px;
+  touch-action: none;
 }
 
 .wheel {
@@ -451,6 +452,7 @@ body {
   /* prevent page scroll while dragging across tiles */
   touch-action: none;
   user-select: none;
+  touch-action: none;
 }
 
 /* Inner ring decoration */
@@ -1377,4 +1379,13 @@ body {
 /* Taller screens — breathe a bit more */
 @media (min-height: 780px) {
   .game { gap: 18px; }
+}
+
+body, html {
+  overscroll-behavior: none;
+  touch-action: pan-x pan-y;
+}
+
+.game-screen, .wheel-wrap {
+  touch-action: none;
 }

@@ -555,7 +555,8 @@ function setupWheelInteraction() {
         { passive: false } is required so preventDefault() can block
         the browser's scroll before it claims the gesture.          ── */
   dom.wheel.addEventListener('touchstart', e => {
-    e.preventDefault();
+  e.stopPropagation();
+  e.preventDefault();
     const t = e.changedTouches[0];
     startGesture(t.clientX, t.clientY);
   }, { passive: false });
