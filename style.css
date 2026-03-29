@@ -448,6 +448,9 @@ body {
   flex-shrink: 0;
   /* smooth glow transitions */
   transition: box-shadow 0.35s ease, border-color 0.35s ease;
+  /* prevent page scroll while dragging across tiles */
+  touch-action: none;
+  user-select: none;
 }
 
 /* Inner ring decoration */
@@ -603,6 +606,19 @@ body {
   box-shadow: none;
   border-color: rgba(167,139,250,0.2);
   animation: none;
+}
+
+/* ══════════════════════════════════════════════
+   Gesture hint label
+   ══════════════════════════════════════════════ */
+.gesture-hint {
+  font-size: 0.70rem;
+  color: var(--text-muted);
+  text-align: center;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+  opacity: 0.55;
 }
 
 /* ══════════════════════════════════════════════

@@ -404,6 +404,13 @@ function renderSlots(count) {
 function renderWheel(letters) {
   dom.wheel.innerHTML = '';
 
+  // SVG layer for the slide trail — appended first so it sits behind tiles
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.id = 'trail-svg';
+  svg.style.cssText =
+    'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:0';
+  dom.wheel.appendChild(svg);
+
   const size   = dom.wheel.offsetWidth;
   const cx     = size / 2;
   const cy     = size / 2;
@@ -429,7 +436,6 @@ function renderWheel(letters) {
       btn.classList.add('selected', 'used');
     }
 
-    btn.addEventListener('click', () => onTileClick(letterIdx));
     dom.wheel.appendChild(btn);
   });
 }
@@ -439,13 +445,157 @@ function getTile(index) {
 }
 
 /* ══════════════════════════════════════════════
-   Interaction
+   Slide trail (SVG overlay)
    ══════════════════════════════════════════════ */
-function onTileClick(index) {
+function renderTrail(liveX, liveY) {
+  const svg = document.getElementById('trail-svg');
+  if (!svg) return;
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  if (state.selected.length === 0) return;
+
+  const wr = dom.wheel.getBoundingClientRect();
+  const lx = (cx, cy) => [cx - wr.left, cy - wr.top];
+
+  // Centre point of each selected tile
+  const pts = [];
+  for (const idx of state.selected) {
+    const tile = getTile(idx);
+    if (!tile) continue;
+    const r = tile.getBoundingClientRect();
+    pts.push(lx(r.left + r.width / 2, r.top + r.height / 2));
+  }
+
+  // Extend to live finger position while dragging
+  if (_isDragging && liveX !== undefined) pts.push(lx(liveX, liveY));
+
+  const ns  = 'http://www.w3.org/2000/svg';
+  const str = pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+
+  if (pts.length >= 2) {
+    // Outer glow
+    const glow = document.createElementNS(ns, 'polyline');
+    glow.setAttribute('points', str);
+    glow.setAttribute('fill', 'none');
+    glow.setAttribute('stroke', 'rgba(251,191,36,0.20)');
+    glow.setAttribute('stroke-width', '14');
+    glow.setAttribute('stroke-linecap', 'round');
+    glow.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(glow);
+
+    // Core line
+    const line = document.createElementNS(ns, 'polyline');
+    line.setAttribute('points', str);
+    line.setAttribute('fill', 'none');
+    line.setAttribute('stroke', 'rgba(251,191,36,0.80)');
+    line.setAttribute('stroke-width', '3');
+    line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(line);
+  }
+
+  // Dot at each confirmed tile centre
+  for (const [x, y] of pts.slice(0, state.selected.length)) {
+    const dot = document.createElementNS(ns, 'circle');
+    dot.setAttribute('cx', x.toFixed(1));
+    dot.setAttribute('cy', y.toFixed(1));
+    dot.setAttribute('r', '5');
+    dot.setAttribute('fill', 'rgba(251,191,36,0.90)');
+    svg.appendChild(dot);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   Interaction — drag-to-select (touch + mouse)
+   ══════════════════════════════════════════════ */
+let _isDragging = false;
+
+function setupWheelInteraction() {
+  /* Hit-test: find the .tile element (if any) directly under a screen point.
+     elementFromPoint skips pointer-events:none nodes like the SVG trail. */
+  function tileAt(x, y) {
+    const el = document.elementFromPoint(x, y);
+    if (!el) return null;
+    const t = el.classList.contains('tile') ? el : el.closest('.tile');
+    return t && dom.wheel.contains(t) ? t : null;
+  }
+
+  function startGesture(x, y) {
+    if (state.done || state.checking) return;
+    _isDragging = true;
+    clearAll();
+    const tile = tileAt(x, y);
+    if (tile) selectTile(parseInt(tile.dataset.index, 10));
+    renderTrail(x, y);
+  }
+
+  function moveGesture(x, y) {
+    if (!_isDragging || state.done || state.checking) return;
+    const tile = tileAt(x, y);
+    if (tile) selectTile(parseInt(tile.dataset.index, 10));
+    renderTrail(x, y);
+  }
+
+  function endGesture() {
+    if (!_isDragging) return;
+    _isDragging = false;
+    renderTrail();
+    if (state.selected.length > 0 && !state.done && !state.checking) {
+      onSubmit();
+    }
+  }
+
+  function cancelGesture() {
+    if (!_isDragging) return;
+    _isDragging = false;
+    clearAll();
+  }
+
+  /* ── Touch (mobile) — registered on wheel so touchmove follows the
+        original contact point even when the finger drifts outside.
+        { passive: false } is required so preventDefault() can block
+        the browser's scroll before it claims the gesture.          ── */
+  dom.wheel.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    startGesture(t.clientX, t.clientY);
+  }, { passive: false });
+
+  dom.wheel.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const t = e.changedTouches[0];
+    moveGesture(t.clientX, t.clientY);
+  }, { passive: false });
+
+  dom.wheel.addEventListener('touchend', e => {
+    e.preventDefault(); // prevent synthetic mouse click from firing
+    endGesture();
+  }, { passive: false });
+
+  dom.wheel.addEventListener('touchcancel', cancelGesture);
+
+  /* ── Mouse (desktop) — mousemove/mouseup on document so dragging
+        outside the wheel boundary still completes the gesture.      ── */
+  dom.wheel.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    startGesture(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mousemove', e => {
+    moveGesture(e.clientX, e.clientY);
+  });
+
+  document.addEventListener('mouseup', e => {
+    if (e.button !== 0) return;
+    endGesture();
+  });
+}
+
+function selectTile(index) {
   if (state.done || state.checking) return;
   if (state.selected.includes(index)) return;
 
-  const tile    = getTile(index);
+  const tile = getTile(index);
+  if (!tile) return;
   tile.classList.add('selected', 'used');
 
   const slotIdx = state.selected.length;
@@ -457,6 +607,7 @@ function onTileClick(index) {
     slot.classList.add('filled');
   }
 
+  if (navigator.vibrate) navigator.vibrate(8);
   updateSubmitBtn();
 }
 
@@ -485,6 +636,8 @@ function onSubmit() {
 function onCorrect(word) {
   state.done = true;
   stopTimer();
+  const _trailSvg = document.getElementById('trail-svg');
+  if (_trailSvg) _trailSvg.innerHTML = '';
 
   // Streak & multiplier
   state.streak++;
@@ -614,6 +767,8 @@ function clearAll() {
   if (state.done) return;
   const puzzle = currentPuzzles[state.puzzleIndex];
   state.selected = [];
+  const _svg = document.getElementById('trail-svg');
+  if (_svg) _svg.innerHTML = '';
 
   dom.wheel.querySelectorAll('.tile').forEach(t => {
     t.classList.remove('selected', 'used');
@@ -880,4 +1035,5 @@ document.addEventListener('keydown', e => {
 /* ══════════════════════════════════════════════
    Boot
    ══════════════════════════════════════════════ */
+setupWheelInteraction();
 init();

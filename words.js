@@ -3,7 +3,7 @@
    Each difficulty has 50+ puzzles; 20 are randomly sampled
    per session so every playthrough feels different.
 
-   Categories: Animals, Food, Places, Actions, Nature, Pinoy
+   Categories: Animals, Food, Places, Actions, Nature, Objects, Tech, Science, Fantasy
    Letters must be an exact anagram of the target.
    ────────────────────────────────────────────────────────── */
 
@@ -76,13 +76,13 @@ const WORD_SETS = {
     { letters: ['E','L','D','F','I'], target: 'FIELD',  category: 'Nature'    },
     { letters: ['E','T','A','P','L'], target: 'PETAL',  category: 'Nature'    },
 
-    /* ── Pinoy ── */
-    { letters: ['U','T','R','O','N'], target: 'TURON',  category: 'Pinoy'     },
-    { letters: ['A','S','M','U','N'], target: 'SUMAN',  category: 'Pinoy'     },
-    { letters: ['N','I','G','A','S'], target: 'SINAG',  category: 'Pinoy'     },
-    { letters: ['U','T','A','G','B'], target: 'GUBAT',  category: 'Pinoy'     },
-    { letters: ['B','I','D','U','K'], target: 'BUKID',  category: 'Pinoy'     },
-    { letters: ['G','Y','O','B','A'], target: 'BAGYO',  category: 'Pinoy'     },
+    /* ── More Nature & Actions ── */
+    { letters: ['R','M','O','S','T'], target: 'STORM',  category: 'Nature'    },
+    { letters: ['M','U','E','P','L'], target: 'PLUME',  category: 'Nature'    },
+    { letters: ['E','B','G','L','O'], target: 'GLOBE',  category: 'Objects'   },
+    { letters: ['O','N','A','G','R'], target: 'GROAN',  category: 'Actions'   },
+    { letters: ['E','L','N','D','B'], target: 'BLEND',  category: 'Actions'   },
+    { letters: ['P','S','I','R','C'], target: 'CRISP',  category: 'Food'      },
   ],
 
   /* ════════════════════════════════════════════
@@ -149,14 +149,14 @@ const WORD_SETS = {
     { letters: ['D','P','I','A','R','S'], target: 'RAPIDS', category: 'Nature'      },
     { letters: ['R','A','G','I','M','E'], target: 'MIRAGE', category: 'Nature'      },
 
-    /* ── Pinoy ── */
-    { letters: ['N','C','H','E','L','O'], target: 'LECHON', category: 'Pinoy'       },
-    { letters: ['P','M','L','I','A','U'], target: 'LUMPIA', category: 'Pinoy'       },
-    { letters: ['G','U','N','B','S','A'], target: 'BANGUS', category: 'Pinoy'       },
-    { letters: ['O','M','C','T','E','A'], target: 'CAMOTE', category: 'Pinoy'       },
-    { letters: ['L','B','O','A','K','I'], target: 'KALIBO', category: 'Pinoy'       },
-    { letters: ['T','V','A','C','E','I'], target: 'CAVITE', category: 'Pinoy'       },
-    { letters: ['G','B','A','I','U','O'], target: 'BAGUIO', category: 'Pinoy'       },
+    /* ── More Animals, Objects & Actions ── */
+    { letters: ['W','G','I','J','A','S'], target: 'JIGSAW', category: 'Objects'     },
+    { letters: ['N','C','E','S','T','I'], target: 'INSECT', category: 'Animals'     },
+    { letters: ['T','Y','O','R','S','F'], target: 'FROSTY', category: 'Nature'      },
+    { letters: ['B','I','G','L','O','N'], target: 'GOBLIN', category: 'Fantasy'     },
+    { letters: ['C','E','T','L','O','K'], target: 'LOCKET', category: 'Objects'     },
+    { letters: ['T','E','M','A','H','L'], target: 'HAMLET', category: 'Places'      },
+    { letters: ['T','L','R','U','A','B'], target: 'BRUTAL', category: 'Actions'     },
   ],
 
   /* ════════════════════════════════════════════
@@ -223,14 +223,14 @@ const WORD_SETS = {
     { letters: ['I','L','E','C','G','R','A'], target: 'GLACIER',  category: 'Nature'    },
     { letters: ['R','O','T','N','R','E','T'], target: 'TORRENT',  category: 'Nature'    },
 
-    /* ── Pinoy ── */
-    { letters: ['Z','A','G','P','L','I','E'], target: 'LEGAZPI',  category: 'Pinoy'     },
-    { letters: ['G','R','O','A','U','I','S'], target: 'SURIGAO',  category: 'Pinoy'     },
-    { letters: ['G','D','U','N','L','I','A'], target: 'LAGUNDI',  category: 'Pinoy'     },
-    { letters: ['M','A','B','L','U','K','O'], target: 'KULAMBO',  category: 'Pinoy'     },
-    { letters: ['U','L','M','I','K','T','A'], target: 'MAKULIT',  category: 'Pinoy'     },
-    { letters: ['S','B','A','L','H','O','A'], target: 'HALABOS',  category: 'Pinoy'     },
-    { letters: ['K','T','A','L','S','O','A'], target: 'SALAKOT',  category: 'Pinoy'     },
-    { letters: ['G','A','T','O','L','A','G'], target: 'TAGALOG',  category: 'Pinoy'     },
+    /* ── More Animals, Nature & Actions ── */
+    { letters: ['V','L','A','E','S','O','B'], target: 'ABSOLVE',  category: 'Actions'   },
+    { letters: ['A','D','O','T','N','M','R'], target: 'DORMANT',  category: 'Nature'    },
+    { letters: ['T','A','H','V','R','S','E'], target: 'HARVEST',  category: 'Nature'    },
+    { letters: ['K','W','E','N','T','O','R'], target: 'NETWORK',  category: 'Tech'      },
+    { letters: ['B','O','E','C','S','U','R'], target: 'OBSCURE',  category: 'Actions'   },
+    { letters: ['A','P','N','H','O','T','M'], target: 'PHANTOM',  category: 'Actions'   },
+    { letters: ['L','O','F','A','R','U','M'], target: 'FORMULA',  category: 'Science'   },
+    { letters: ['P','R','Y','O','N','H','G'], target: 'GRYPHON',  category: 'Fantasy'   },
   ],
 };
