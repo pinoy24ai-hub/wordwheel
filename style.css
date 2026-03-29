@@ -542,6 +542,7 @@ body {
   justify-content: center;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: none;
   outline: none;
 
   /* Pop-in animation on load */
@@ -1383,9 +1384,12 @@ body {
 
 body, html {
   overscroll-behavior: none;
-  touch-action: manipulation;
 }
 
-.game-screen, .wheel-wrap {
+#app {
+  touch-action: none;
+}
+
+.game, .wheel-wrap, .wheel {
   touch-action: none;
 }

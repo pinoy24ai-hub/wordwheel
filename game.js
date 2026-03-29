@@ -429,6 +429,7 @@ function renderWheel(letters) {
     btn.dataset.index = letterIdx;
     btn.style.left    = `${x}px`;
     btn.style.top     = `${y}px`;
+    btn.style.touchAction = 'none';
     btn.setAttribute('aria-label', `Letter ${letters[letterIdx]}`);
 
     // Restore highlight if this letter is already in the current word
@@ -555,24 +556,29 @@ function setupWheelInteraction() {
         { passive: false } is required so preventDefault() can block
         the browser's scroll before it claims the gesture.          ── */
   dom.wheel.addEventListener('touchstart', e => {
-  e.stopPropagation();
-  e.preventDefault();
+    e.stopPropagation();
+    e.preventDefault();
     const t = e.changedTouches[0];
     startGesture(t.clientX, t.clientY);
   }, { passive: false });
 
   dom.wheel.addEventListener('touchmove', e => {
+    e.stopPropagation();
     e.preventDefault();
     const t = e.changedTouches[0];
     moveGesture(t.clientX, t.clientY);
   }, { passive: false });
 
   dom.wheel.addEventListener('touchend', e => {
-    e.preventDefault(); // prevent synthetic mouse click from firing
+    e.stopPropagation();
+    e.preventDefault();
     endGesture();
   }, { passive: false });
 
-  dom.wheel.addEventListener('touchcancel', cancelGesture);
+  dom.wheel.addEventListener('touchcancel', e => {
+    e.stopPropagation();
+    cancelGesture();
+  }, { passive: false });
 
   /* ── Mouse (desktop) — mousemove/mouseup on document so dragging
         outside the wheel boundary still completes the gesture.      ── */
